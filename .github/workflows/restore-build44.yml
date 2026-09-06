@@ -5,6 +5,7 @@ on:
     branches: [main]
     paths:
       - '.source/fiama-build44.part*'
+      - '.github/workflows/restore-build44.yml'
 
 permissions:
   contents: write
@@ -26,6 +27,9 @@ jobs:
           fi
           cat "${parts[@]}" | base64 -d > /tmp/fiama-build44-source.tar.gz
           tar -xzf /tmp/fiama-build44-source.tar.gz
+          # The runner token cannot create/update workflow files.
+          # verify.yml will be restored separately by the authorized GitHub connector.
+          rm -f .github/workflows/verify.yml
           rm -rf .source
           rm -f .github/workflows/restore-build44.yml
           git config user.name "github-actions[bot]"
