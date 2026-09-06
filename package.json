@@ -1,0 +1,10 @@
+{
+  "name": "copilote-fiama",
+  "version": "1.0.0-build44",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "check": "node --check public/app.js && node --check public/sw.js && node --check server/worker.js",
+    "verify": "npm run check"
+  }
+}

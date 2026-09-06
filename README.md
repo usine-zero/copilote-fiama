@@ -1,11 +1,13 @@
-# Copilote FIAMA
+# Copilote Fiama — BUILD 44
 
-Dépôt officiel du Copilote FIAMA — BUILD 44.
+Base maître: COPILOTE-FIAMA-V1-BUILD-44.
 
-Le site public est servi par GitHub Pages depuis la racine de la branche `main`.
+## Structure
+- `public/` : PWA publique à déployer.
+- `server/` : passerelle cerveau distante, désactivée par défaut.
+- `docs/` : dossier maître, audits et historique de construction. Ne pas publier comme racine web.
 
 ## Sécurité
-Ne jamais ajouter de mot de passe, jeton, clé API, cookie, OTP ou autre secret dans ce dépôt.
-
-## Source maître
-BUILD 44 est la base de référence avant toute modification future. Les évolutions doivent être versionnées clairement.
+- Aucun secret ne doit être commité.
+- Le cerveau distant reste désactivé tant qu'un fournisseur et un budget ne sont pas explicitement configurés côté serveur.
+- Pour un déploiement statique, publier uniquement le dossier `public/`.
