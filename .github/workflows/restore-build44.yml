@@ -1,0 +1,39 @@
+name: Restore FIAMA BUILD 44 source
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.source/fiama-build44.part*'
+
+permissions:
+  contents: write
+
+jobs:
+  restore:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Restore BUILD 44 source tree
+        shell: bash
+        run: |
+          set -euo pipefail
+          shopt -s nullglob
+          parts=(.source/fiama-build44.part*)
+          if [ ${#parts[@]} -eq 0 ]; then
+            echo "No restore payload present; nothing to do."
+            exit 0
+          fi
+          cat "${parts[@]}" | base64 -d > /tmp/fiama-build44-source.tar.gz
+          tar -xzf /tmp/fiama-build44-source.tar.gz
+          rm -rf .source
+          rm -f .github/workflows/restore-build44.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          if git diff --cached --quiet; then
+            echo "Nothing changed."
+            exit 0
+          fi
+          git commit -m "chore: restore complete FIAMA BUILD 44 source tree"
+          git push
