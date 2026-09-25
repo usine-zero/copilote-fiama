@@ -1,0 +1,42 @@
+name: SAOU bootstrap check
+
+on:
+  push:
+    paths:
+      - "obina-bootstrap/saou-transport/**"
+      - ".github/workflows/saou-bootstrap-check.yml"
+  workflow_dispatch:
+
+jobs:
+  syntax-and-contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Python syntax
+        run: |
+          python -m py_compile obina-bootstrap/saou-transport/modal_saou_transport_ad.py
+          python -m py_compile obina-bootstrap/saou-transport/modal_saou_transport_viewer.py
+      - name: Guard critical fixes
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p = Path("obina-bootstrap/saou-transport/modal_saou_transport_ad.py").read_text()
+          v = Path("obina-bootstrap/saou-transport/modal_saou_transport_viewer.py").read_text()
+          checks = {
+              "negative edge-tts rate uses equals": 'f"--rate={rate}"' in p,
+              "negative edge-tts pitch uses equals": 'f"--pitch={pitch}"' in p,
+              "TTS runs before GPU in entrypoint": p.index("prepare_audio.remote") < p.index("produce.remote"),
+              "scene checkpoint commit present": "checkpoint every completed scene immediately" in p,
+              "L40S declared": 'gpu="L40S"' in p,
+              "viewer targets v2 cache": "saou-transport-v2" in v,
+              "no slideshow contract": '"slideshow": False' in p,
+          }
+          failed = [name for name, ok in checks.items() if not ok]
+          for name, ok in checks.items():
+              print(("PASS" if ok else "FAIL"), name)
+          if failed:
+              raise SystemExit("Failed: " + ", ".join(failed))
+          PY
