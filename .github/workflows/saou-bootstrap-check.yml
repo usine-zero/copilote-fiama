@@ -19,6 +19,7 @@ jobs:
         run: |
           python -m py_compile obina-bootstrap/saou-transport/modal_saou_transport_ad.py
           python -m py_compile obina-bootstrap/saou-transport/modal_saou_transport_viewer.py
+          python -m py_compile obina-bootstrap/saou-transport/run_saou_once.py
       - name: Guard critical fixes
         run: |
           python - <<'PY'
@@ -32,6 +33,7 @@ jobs:
               "scene checkpoint commit present": "checkpoint every completed scene immediately" in p,
               "L40S declared": 'gpu="L40S"' in p,
               "viewer targets v2 cache": "saou-transport-v2" in v,
+              "launcher exists": Path("obina-bootstrap/saou-transport/run_saou_once.py").is_file(),
               "no slideshow contract": '"slideshow": False' in p,
           }
           failed = [name for name, ok in checks.items() if not ok]
