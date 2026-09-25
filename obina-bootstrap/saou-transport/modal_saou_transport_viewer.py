@@ -1,7 +1,7 @@
-"""Lightweight public viewer for the already-produced SAOU Transport ad.
+"""Lightweight public viewer for the already-produced SAOU Transport v2 ad.
 
 Deploy only after the GPU producer has stored:
-  /cache/saou-transport-v1/SAOU_TRANSPORT_VRAIE_VIDEO.mp4
+  /cache/saou-transport-v2/SAOU_TRANSPORT_VRAIE_VIDEO.mp4
 
 Command:
   modal deploy deploy/modal_saou_transport_viewer.py
@@ -11,8 +11,8 @@ import modal
 
 APP="obina-saou-transport-viewer"
 CACHE="/cache"
-VIDEO=f"{CACHE}/saou-transport-v1/SAOU_TRANSPORT_VRAIE_VIDEO.mp4"
-PROOF=f"{CACHE}/saou-transport-v1/proof.json"
+VIDEO=f"{CACHE}/saou-transport-v2/SAOU_TRANSPORT_VRAIE_VIDEO.mp4"
+PROOF=f"{CACHE}/saou-transport-v2/proof.json"
 
 app=modal.App(APP)
 cache=modal.Volume.from_name("obina-saou-ltx-cache", create_if_missing=True)
