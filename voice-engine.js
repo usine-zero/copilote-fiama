@@ -34,11 +34,31 @@ function wordsToNumber(raw) {
 }
 
 function extractTable(text, context={}) {
-  const m = text.match(/\btable\s*(?:(?:numero|n)\s*)?(\d{1,3})\b/);
+  let m = text.match(/\btable\s*(?:(?:numero|n)\s*)?(\d{1,3})\b/);
   if (m) return Number(m[1]);
+  m = text.match(/\btable\s*(?:(?:numero|n)\s*)?([a-z]+)(?:\s+([a-z]+))?/);
+  if (m && NUMBER_WORDS.has(m[1])) {
+    const first=NUMBER_WORDS.get(m[1]);
+    const second=m[2] && NUMBER_WORDS.has(m[2]) ? NUMBER_WORDS.get(m[2]) : null;
+    if (first>=20 && first%10===0 && second!==null && second>0 && second<10) return first+second;
+    return first;
+  }
   const pronoun = /\b(elle|celle ci|cette table|la table)\b/.test(text);
   if (pronoun && Number.isFinite(context.tableId)) return Number(context.tableId);
   return null;
+}
+
+function stripTablePrefix(text='') {
+  let m=text.match(/^.*?\btable\s*(?:(?:numero|n)\s*)?\d{1,3}\b\s*[:, -]?\s*(.*)$/);
+  if(m) return m[1].trim();
+  m=text.match(/^.*?\btable\s*(?:(?:numero|n)\s*)?([a-z]+)(?:\s+([a-z]+))?\s*[:, -]?\s*(.*)$/);
+  if(!m || !NUMBER_WORDS.has(m[1])) return text;
+  const first=NUMBER_WORDS.get(m[1]);
+  let rest=m[3]||'';
+  if(first>=20 && first%10===0 && m[2] && NUMBER_WORDS.has(m[2]) && NUMBER_WORDS.get(m[2])<10) return rest.trim();
+  // Regex may have consumed the first word of the order as group 2. Put it back unless it completed a tens number.
+  if(m[2]) rest=`${m[2]} ${rest}`;
+  return rest.trim();
 }
 
 function extractTime(text) {
@@ -57,10 +77,10 @@ function extractDateHint(text) {
 }
 
 function extractPeople(text) {
-  const m = text.match(/(?:pour|de)\s+(\d{1,2})\s*(?:personnes|personne|couverts|clients)?/);
-  if (m) return Number(m[1]);
-  const m2 = text.match(/\b(\d{1,2})\s*(?:personnes|personne|couverts|clients)\b/);
-  if (m2) return Number(m2[1]);
+  const m = text.match(/(?:pour|de)\s+([a-z0-9 -]+?)\s*(?:personnes|personne|couverts|clients)\b/);
+  if (m) { const n=wordsToNumber(m[1]); if(n!==null) return n; }
+  const m2 = text.match(/\b([a-z0-9 -]+?)\s*(?:personnes|personne|couverts|clients)\b/);
+  if (m2) { const n=wordsToNumber(m2[1]); if(n!==null) return n; }
   return null;
 }
 
@@ -83,12 +103,18 @@ function extractMoney(text) {
 }
 
 function extractQuantityProduct(text, verbPattern) {
-  const re = new RegExp(`${verbPattern}\\s+(?:de\\s+)?(\\d+(?:[.,]\\d+)?)\\s*(?:x\\s*)?(.+)$`);
-  const m = text.match(re);
-  if (!m) return null;
-  const quantity = Number(m[1].replace(',','.'));
-  const product = m[2].replace(/\b(en stock|au stock|dans le stock)\b/g,'').trim();
-  if (!product) return null;
+  let re = new RegExp(`${verbPattern}\\s+(?:de\\s+)?(\\d+(?:[.,]\\d+)?)\\s*(?:x\\s*)?(.+)$`);
+  let m = text.match(re);
+  let quantity=null, product='';
+  if (m) { quantity=Number(m[1].replace(',','.')); product=m[2]; }
+  else {
+    re = new RegExp(`${verbPattern}\\s+(?:de\\s+)?([a-z-]+)\\s+(.+)$`);
+    m=text.match(re);
+    if(!m) return null;
+    quantity=wordsToNumber(m[1]); product=m[2];
+  }
+  product = product.replace(/\b(en stock|au stock|dans le stock)\b/g,'').trim();
+  if (quantity===null || !product || /^(?:tache|a faire)\b/.test(product)) return null;
   return {quantity, product};
 }
 
@@ -119,9 +145,9 @@ export function parseRestaurantCommand(input, context={}) {
   }
 
   const nav = [
-    ['dashboard','dashboard'],['accueil','dashboard'],['salle','floor'],['tables','floor'],['cuisine','kitchen'],['stock','stock'],['stocks','stock'],
-    ['equipe','team'],['planning','team'],['reservations','reservations'],['reservation','reservations'],['clients','customers'],
-    ['taches','tasks'],['incidents','incidents'],['rapports','reports'],['rapport','reports'],['studio','studio'],['photos','studio'],
+    ['dashboard','dashboard'],['accueil','dashboard'],['salle','floor'],['tables','floor'],['commandes','orders'],['commande','orders'],['cuisine','kitchen'],['stock','stock'],['stocks','stock'],
+    ['recettes','recipes'],['recette','recipes'],['fiches techniques','recipes'],['equipe','team'],['planning','planning'],['reservations','reservations'],['reservation','reservations'],['clients','customers'],
+    ['taches','tasks'],['caisse','cash'],['cloture','cash'],['direction','direction'],['indicateurs','direction'],['formation','training'],['incidents','incidents'],['rapports','reports'],['rapport','reports'],['studio','studio'],['photos','studio'],
     ['reglages','settings'],['parametres','settings'],['checklist','checklists'],['checklists','checklists']
   ];
   for (const [word, section] of nav) {
@@ -135,10 +161,25 @@ export function parseRestaurantCommand(input, context={}) {
 
   const tableId = extractTable(text, context);
 
+  // Status of an existing order must win over creation of a new ticket.
+  if (tableId !== null && /\bcommande\b/.test(text) && /\b(prete|pret|en preparation|preparee|prepare|servie|servi|payee|paye)\b/.test(text)) {
+    const status=/payee|paye/.test(text)?'paid':/servie|servi/.test(text)?'served':/prete|pret/.test(text)?'ready':'preparing';
+    return result('ORDER_STATUS',{tableId,status},{section:'orders',raw});
+  }
+
   // A spoken kitchen ticket has priority over generic table-state words such as 'commande'.
   if (tableId !== null && /\b(commande|ticket)\b/.test(text) && !/\b(commande prise|commande envoyee|commandee)\b/.test(text)) {
     const items = raw.replace(/^.*?table\s*\d+\s*[:,-]?/i,'').trim();
     if (items) return result('KITCHEN_TICKET',{tableId,items},{section:'kitchen',raw});
+  }
+
+  // Natural shorthand used in service: « Table 12, deux eaux » or « Table douze, deux eaux ».
+  if (tableId !== null) {
+    const restRaw=stripTablePrefix(normalizeVoice(raw));
+    const after=normalizeVoice(restRaw);
+    if(after && /^(?:\d+|un|une|deux|trois|quatre|cinq|six|sept|huit|neuf|dix|onze|douze|treize|quatorze|quinze|seize|vingt)\b/.test(after)) {
+      return result('KITCHEN_TICKET',{tableId,items:restRaw},{section:'kitchen',raw});
+    }
   }
 
   if (tableId !== null) {
@@ -188,6 +229,12 @@ export function parseRestaurantCommand(input, context={}) {
 
   const setStock = text.match(/\b(?:il reste|reste|stock de)\s+(\d+(?:[.,]\d+)?)\s+(.+)$/);
   if (setStock) return result('STOCK_SET',{quantity:Number(setStock[1].replace(',','.')),product:setStock[2].trim()},{section:'stock',raw});
+  const setStockWord = text.match(/\b(?:il reste|reste|stock de)\s+([a-z-]+)\s+(.+)$/);
+  if (setStockWord) { const q=wordsToNumber(setStockWord[1]); if(q!==null) return result('STOCK_SET',{quantity:q,product:setStockWord[2].trim()},{section:'stock',raw}); }
+  const stockNatural = text.match(/^stock\s+(.+?)\s+(\d+(?:[.,]\d+)?)$/);
+  if (stockNatural) return result('STOCK_SET',{quantity:Number(stockNatural[2].replace(',','.')),product:stockNatural[1].trim()},{section:'stock',raw});
+  const stockNaturalWord = text.match(/^stock\s+(.+?)\s+([a-z-]+)$/);
+  if (stockNaturalWord) { const q=wordsToNumber(stockNaturalWord[2]); if(q!==null) return result('STOCK_SET',{quantity:q,product:stockNaturalWord[1].trim()},{section:'stock',raw}); }
 
   if (/\b(ajoute|cree|note)\b.*\b(tache|a faire)\b/.test(text) || /^rappelle\s+/.test(text)) {
     const task = text.replace(/^.*?\b(?:tache|a faire)\b\s*(?:de\s+)?/,'').replace(/^rappelle\s+(?:moi\s+)?(?:de\s+)?/,'').trim();
@@ -218,7 +265,11 @@ export function parseRestaurantCommand(input, context={}) {
     return result('KITCHEN_86',{item:item || raw},{section:'kitchen',raw});
   }
 
-  if (/\b(chiffre|ca|recette)\b/.test(text)) {
+  if (/\b(cloture|ferme|termine)\b.*\bcaisse\b|\bcaisse\b.*\b(cloture|ferme|termine)\b/.test(text)) {
+    return result('CASH_CLOSE',{}, {section:'cash',sensitive:true,requiresConfirmation:true,raw});
+  }
+
+  if (/\b(chiffre|ca|ventes|chiffre d affaires)\b/.test(text)) {
     const amount = extractMoney(text);
     if (amount !== null) return result('METRIC_REVENUE',{amount},{section:'reports',sensitive:true,requiresConfirmation:true,raw});
   }
@@ -265,7 +316,9 @@ export function summarizeCommand(cmd) {
     case 'TEAM_ABSENCE': return `Absence : ${e.name}`;
     case 'TEAM_LATE': return `Retard : ${e.name}`;
     case 'KITCHEN_TICKET': return `Ticket table ${e.tableId} : ${e.items}`;
+    case 'ORDER_STATUS': return `Commande table ${e.tableId} → ${e.status}`;
     case 'KITCHEN_86': return `Rupture cuisine : ${e.item}`;
+    case 'CASH_CLOSE': return 'Clôturer la caisse';
     case 'METRIC_REVENUE': return `Chiffre : ${e.amount}`;
     case 'METRIC_COVERS': return `Couverts : ${e.count}`;
     case 'SERVICE_CLOSE': return 'Clôturer le service';
@@ -278,8 +331,9 @@ export function summarizeCommand(cmd) {
 export const VOICE_EXAMPLES = [
   'Table 12 occupée',
   'Table 7 veut l’addition',
+  'Table 12, deux eaux',
   'Table 4 allergie aux arachides',
-  'Réserve pour 4 personnes à 20h au nom de Diallo',
+  'Réserve quatre personnes à 20h au nom de Diallo',
   'Il reste 6 saumons',
   'Rupture de saumon',
   'Ajoute 12 bouteilles d’eau',
@@ -287,5 +341,7 @@ export const VOICE_EXAMPLES = [
   'Ajoute une tâche : nettoyer la machine à café',
   'Incident : frigo cuisine en panne',
   'Commande table 5 : deux burgers et une salade',
+  'Commande table 5 prête',
+  'Ouvre la caisse',
   'Ouvre le rapport du jour'
 ];
