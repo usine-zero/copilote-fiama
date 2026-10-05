@@ -1,13 +1,15 @@
-# Copilote Fiama — BUILD 44
+# OBINA Restaurant — BUILD 46
 
-Base maître: COPILOTE-FIAMA-V1-BUILD-44.
+Cockpit restaurant responsive téléphone + tablette + ordinateur.
 
-## Structure
-- `public/` : PWA publique à déployer.
-- `server/` : passerelle cerveau distante, désactivée par défaut.
-- `docs/` : dossier maître, audits et historique de construction. Ne pas publier comme racine web.
+## Modules
+Aujourd'hui, Salle, Commandes, Cuisine, Réservations, Clients, Stocks, Recettes, Équipe, Planning, Tâches, Caisse, Direction, Formation, Contrôles, Incidents, Studio photo, Rapports et Réglages.
 
-## Sécurité
-- Aucun secret ne doit être commité.
-- Le cerveau distant reste désactivé tant qu'un fournisseur et un budget ne sont pas explicitement configurés côté serveur.
-- Pour un déploiement statique, publier uniquement le dossier `public/`.
+## Voix
+Commande vocale contextuelle restaurant avec confirmation des actions sensibles. Exemples : « Table douze, deux eaux », « Rupture saumon », « Réserve quatre personnes à 20 h », « Fatou absente », « Ouvre la caisse ».
+
+## Données
+Fonctionnement local hors ligne. Un service Sync Node.js optionnel permet de partager le même état entre appareils avec jeton serveur et protection de version.
+
+## Vérification
+`npm run verify`

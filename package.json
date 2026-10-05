@@ -1,10 +1,12 @@
 {
-  "name": "copilote-fiama",
-  "version": "1.0.0-build44",
+  "name": "obina-restaurant",
+  "version": "1.2.0-build46",
   "private": true,
   "type": "module",
   "scripts": {
-    "check": "node --check public/app.js && node --check public/sw.js && node --check server/worker.js",
-    "verify": "npm run check"
+    "check": "node --check public/app.js && node --check public/voice-engine.js && node --check public/sw.js && node --check server/sync-server.mjs",
+    "test:restaurant": "node tests/restaurant-core.test.mjs",
+    "test:sync": "node tests/sync-server.test.mjs",
+    "verify": "npm run check && npm run test:restaurant && npm run test:sync"
   }
 }
