@@ -1,1 +1,11 @@
-{"name":"OBINA Restaurant","short_name":"OBINA Restaurant","start_url":"./","display":"standalone","background_color":"#f5f5f5","theme_color":"#ffffff","description":"Restaurant connecté OBINA : salle, cuisine, réservations, stocks, équipe, direction et commande vocale.","icons":[]}
+{
+  "name": "FIAMA Restaurant",
+  "short_name": "FIAMA",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#f4f1ea",
+  "theme_color": "#111111",
+  "description": "Cockpit restaurant mobile : salle, cuisine, stocks, équipe, réservations, studio photo et commande vocale métier.",
+  "lang": "fr",
+  "icons": []
+}
