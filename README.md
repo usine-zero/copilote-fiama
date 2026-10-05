@@ -1,20 +1,32 @@
-# OBINA Restaurant — chantier BUILD 45
+# FIAMA Restaurant — BUILD 45
 
-Produit officiel : **OBINA Restaurant**.
+BUILD 44 reste la base historique. BUILD 45 transforme l’interface publique en cockpit spécialisé restauration sans supprimer les principes de sécurité : fonctionnement local par défaut, sauvegarde contrôlée, aucune clé secrète côté navigateur, confirmation des actions sensibles et arrêt du micro quand l’application quitte le premier plan.
 
-La branche actuelle dérive de l'ancien Copilote Fiama BUILD 44. Les noms techniques historiques peuvent rester temporairement pour compatibilité, mais le produit utilisateur porte désormais le nom **OBINA Restaurant**.
+## Modules
+- Aujourd’hui / service
+- Salle et tables
+- Réservations
+- Cuisine et tickets
+- Stocks / ruptures
+- Équipe (présence opérationnelle, pas dossier RH)
+- Tâches
+- Clients (notes minimales choisies)
+- Contrôles / check-lists
+- Incidents
+- Studio FIAMA pour améliorer localement les vraies photos
+- Rapports
+- Réglages et sauvegarde
 
-## Règle d'interface
-OBINA Restaurant est multi-appareils : téléphone, tablette et ordinateur. Le téléphone reçoit une interface plus compacte et simplifiée, mais aucune fonction métier importante ne doit être réservée à un seul type d'appareil.
-
-Voir `docs/OBINA-RESTAURANT-DIRECTIVE.md` pour la directive de chantier complète.
+## Commande vocale métier
+Le moteur `public/voice-engine.js` analyse d’abord les commandes localement : table, addition, allergie, réservation, stock, rupture, équipe, tâche, incident, ticket cuisine, rapports, check-lists et navigation. Les actions sensibles demandent confirmation. Le mode mains libres peut exiger le mot-clé « FIAMA ».
 
 ## Structure
-- `public/` : PWA publique à déployer.
-- `server/` : passerelle cerveau distante, désactivée par défaut.
-- `docs/` : dossier maître, audits et historique de construction. Ne pas publier comme racine web.
+- `public/` : PWA à publier
+- `server/` : passerelle cerveau distante existante, désactivée par défaut
+- `tests/` : tests du routeur vocal restaurant
+- `docs/` : dossier de conception et point de reprise
 
-## Sécurité
-- Aucun secret ne doit être commité.
-- Le cerveau distant reste désactivé tant qu'un fournisseur et un budget ne sont pas explicitement configurés côté serveur.
-- Pour un déploiement statique, publier uniquement le dossier `public/`.
+## Vérification
+```bash
+npm run verify
+```
