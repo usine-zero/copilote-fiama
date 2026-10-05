@@ -304,3 +304,22 @@ Nouveau moteur public/voice-engine.js et copie racine :
 
 ### Reste avant fusion/déploiement
 Valider sur un vrai smartphone : autorisation micro, dictée, mains libres, arrêt du micro en arrière-plan, PWA/offline, Studio photo/export. Ne pas déclarer cette validation appareil comme faite avant le test réel.
+
+
+---
+
+## BUILD 46 — OBINA RESTAURANT — 05/10/2026
+
+Nom officiel : OBINA Restaurant. La base technique historique FIAMA est conservée uniquement quand cela protège la compatibilité des données.
+
+### Terminé
+- Interface responsive téléphone, tablette et ordinateur.
+- Aujourd'hui, Salle, Commandes, Cuisine, Réservations, Clients, Stocks, Recettes, Équipe, Planning, Tâches, Caisse, Direction, Formation, Contrôles, Incidents, Studio, Rapports, Réglages.
+- Commande vocale restaurant contextuelle, chiffres écrits en lettres compris pour les tables et stocks.
+- Confirmations avant actions sensibles et blocage des suppressions globales vocales.
+- PWA/offline BUILD 46.
+- Service Sync Node.js : jeton, versions optimistes, HTTP 409 en cas de conflit, écriture atomique.
+- Tests locaux : 31 assertions voix + 15 assertions Sync + analyse syntaxique PASS.
+
+### Contrôle avant fusion
+La branche reste séparée de main jusqu'au contrôle utilisateur du lien public. Les fonctions dépendantes du navigateur réel (permission micro, qualité de reconnaissance vocale, installation PWA et ergonomie tactile) doivent être contrôlées sur appareil réel.
