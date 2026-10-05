@@ -259,3 +259,48 @@ Pré-audit de fin de V1 réalisé. La progression ne présente plus les mémoire
 
 ## Point de reprise — BUILD 44
 Audit final de cohérence actif terminé. Prochaine étape : test réel iPhone/Safari/PWA et corrections uniquement sur faits observés.
+
+
+---
+
+## BUILD 45 — FIAMA RESTAURANT — 05/10/2026
+
+### Objectif
+Transformer COPILOTE FIAMA en cockpit 100 % restauration, utilisable sur téléphone, sans casser la base BUILD 44.
+
+### Construit
+- Cockpit Aujourd'hui avec service, alertes et priorités.
+- Salle et plan de tables avec états, notes, allergies et addition.
+- Réservations avec placement sur table libre.
+- Cuisine avec tickets et ruptures.
+- Stocks avec quantités, seuils et alertes.
+- Équipe avec états opérationnels (ce module ne remplace pas un dossier RH officiel).
+- Tâches, clients, check-lists, incidents et rapports.
+- Studio FIAMA : photo réelle, amélioration visuelle locale, conseils de dressage/table/salle et export JPEG.
+- Données locales, export/import JSON et journal d'audit.
+- Racine et dossier public/ synchronisés.
+
+### Voix restaurant
+Nouveau moteur public/voice-engine.js et copie racine :
+- table occupée / libre / servie / addition ;
+- allergie avec confirmation ;
+- réservation ;
+- stock, ajout, retrait et rupture ;
+- absence/retard équipe ;
+- tâche et incident ;
+- ticket cuisine ;
+- navigation et rapport ;
+- contexte de table : « elle veut l'addition » après sélection d'une table ;
+- mode mains libres avec mot d'activation FIAMA ;
+- commandes sensibles soumises à confirmation ;
+- commandes destructrices globales bloquées.
+
+### Vérification
+- Tests purs du moteur restaurant : 18 assertions PASS en local.
+- Analyse syntaxique JS et contrôles statiques de sécurité : PASS en local.
+- Point de reprise : docs/POINT-DE-REPRISE-RESTAURANT.md.
+- Notes : docs/BUILD-45-NOTES.md.
+- Branche : sol/fiama-restaurant-v1-20261005.
+
+### Reste avant fusion/déploiement
+Valider sur un vrai smartphone : autorisation micro, dictée, mains libres, arrêt du micro en arrière-plan, PWA/offline, Studio photo/export. Ne pas déclarer cette validation appareil comme faite avant le test réel.
