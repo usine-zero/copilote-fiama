@@ -1,6 +1,13 @@
-# Copilote Fiama — BUILD 44
+# OBINA Restaurant — chantier BUILD 45
 
-Base maître: COPILOTE-FIAMA-V1-BUILD-44.
+Produit officiel : **OBINA Restaurant**.
+
+La branche actuelle dérive de l'ancien Copilote Fiama BUILD 44. Les noms techniques historiques peuvent rester temporairement pour compatibilité, mais le produit utilisateur porte désormais le nom **OBINA Restaurant**.
+
+## Règle d'interface
+OBINA Restaurant est multi-appareils : téléphone, tablette et ordinateur. Le téléphone reçoit une interface plus compacte et simplifiée, mais aucune fonction métier importante ne doit être réservée à un seul type d'appareil.
+
+Voir `docs/OBINA-RESTAURANT-DIRECTIVE.md` pour la directive de chantier complète.
 
 ## Structure
 - `public/` : PWA publique à déployer.
